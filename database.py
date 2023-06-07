@@ -114,7 +114,9 @@ def change_tag_in_database(isin, new_tag):
     session.commit()
 
 def update_in_database(isin, create_new=True):
-    isinobject = session.query(ISIN).filter_by(isin=isin).first()
+    TempSession = sessionmaker(bind = engine)
+    tmpsession = TempSession()
+    isinobject = tmpsession.query(ISIN).filter_by(isin=isin).first()
     if isinobject is None:
         if create_new:
             return add_to_database(isin)
@@ -122,7 +124,6 @@ def update_in_database(isin, create_new=True):
     name, url, vola, perf = online_check.get_data(isin)
     if name is not None and url is not None and vola is not None and perf is not None:
         isinobject.update(name, url, vola, perf)
-        session.commit()
+        tmpsession.commit()
         return True
     return False
-        

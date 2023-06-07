@@ -1,6 +1,8 @@
 import database
+
 import pandas as pd
 import shutil
+from sys import exit
 
 length_isin = 12
 delta_days = 1
@@ -11,6 +13,7 @@ import sys
 import design
 from os.path import exists
 
+import threading
 class App(QtWidgets.QMainWindow, design.Ui_MainWindow):
     def __init__(self, parent=None):
         super(App, self).__init__(parent)
@@ -20,7 +23,7 @@ class App(QtWidgets.QMainWindow, design.Ui_MainWindow):
             self.setupUi(self)
             self.data()
         else:
-            exit()
+            exit(0)
 
     def load_action(self, first_load=False):
         ok = False
@@ -30,16 +33,20 @@ class App(QtWidgets.QMainWindow, design.Ui_MainWindow):
             if exists(self.filename):
                 ok = True
         if ok is False:
-            self.filename, ok = QtWidgets.QFileDialog.getSaveFileName(self, "Load Database", "" , "SQLite files (*.db)")
+            self.filename = ""
+            self.filename, ok = QtWidgets.QFileDialog.getOpenFileName(self, "Load database (Press >Cancle< to create new one)", "" , "SQLite files (*.db)")
+            if self.filename == "":
+                self.filename, ok = QtWidgets.QFileDialog.getSaveFileName(self, "Create new database", "" , "SQLite files (*.db)")
             with open("config-isincheck.conf", 'w') as fi:
                 fi.write(self.filename)
-        if ok:
-            database.close_db()
-            database.init_db(self.filename)
+        database.close_db()
+        database.init_db(self.filename)
+        if not first_load:
+            self.refreshbutton_action()
         return ok
     
     def save_as_action(self):
-        new_filename, ok = QtWidgets.QFileDialog.getSaveFileName(self, "Save Database", "" , "SQLite files (*.db)")
+        new_filename, ok = QtWidgets.QFileDialog.getSaveFileName(self, "Save database", "" , "SQLite files (*.db)")
         if ok:
             database.close_db()
             shutil.move(self.filename, new_filename)
@@ -52,9 +59,8 @@ class App(QtWidgets.QMainWindow, design.Ui_MainWindow):
         isin, ok = QtWidgets.QInputDialog.getText(self, "Add ISIN", "Enter ISIN: ")
         self.progress.setValue(0)
         if ok and len(isin)==length_isin:
-            if database.add_to_database(isin):
-                self.progress.setValue(100)
-        self.refreshbutton_action()
+            task = threading.Thread(target=self.do_update_task, args=(isin, 1,))
+            task.start()
         
     def addmultiplebutton_action(self):
         isins, ok = QtWidgets.QInputDialog.getMultiLineText(self, "Add ISINs", "Enter ISINs (With newline seperated!): ")
@@ -62,12 +68,10 @@ class App(QtWidgets.QMainWindow, design.Ui_MainWindow):
         if ok and len(isins)>0:
             isin_list = isins.replace(" ", "").splitlines()
             for isin_number in range(len(isin_list)):
-                self.progress.setValue(int(100/len(isin_list)*isin_number))
                 isin = isin_list[isin_number]
                 if len(isin) == length_isin:
-                    database.add_to_database(isin)
-            self.progress.setValue(100)
-        self.refreshbutton_action()
+                    task = threading.Thread(target=self.do_update_task, args=(isin, len(isin_list),))
+                    task.start()
         
     def editbutton_action(self):
         new_tag, ok = QtWidgets.QInputDialog.getText(self, "Change Tag", "Enter new Tag: ")
@@ -90,7 +94,15 @@ class App(QtWidgets.QMainWindow, design.Ui_MainWindow):
     
     def refreshbutton_action(self):
         self.data()
+       
+       
+    def do_update_task(self, isin, taskcount):
+        database.update_in_database(isin)
+        print("updated:" + isin)
+        print(str(100-(threading.active_count()-2)/taskcount*100)+"%")
+        self.progress.setValue(100-int((threading.active_count()-2)/taskcount*100)) # get status of update by the count of threads 
         
+    
     def updateallbutton_action(self):
         self.progress.setValue(0)
         isins = database.get_all_data(self.sortedby)
@@ -98,12 +110,8 @@ class App(QtWidgets.QMainWindow, design.Ui_MainWindow):
             return False
         for isin_number in range(len(isins)):
             isin = isins[isin_number]
-            self.progress.setValue(int(100/len(isins)*isin_number))
-            if isin.check_timedelta(delta_days):
-                database.update_in_database(isin.isin)
-        self.progress.setValue(100)
-        self.refreshbutton_action()
-            
+            task = threading.Thread(target=self.do_update_task, args=(isin.isin, len(isins),))
+            task.start()         
         
     def updatebutton_action(self):
         self.progress.setValue(0)
@@ -111,12 +119,10 @@ class App(QtWidgets.QMainWindow, design.Ui_MainWindow):
         if indexes is None:
             return False
         for index_number in range(len(indexes)):
-            self.progress.setValue(int(100/len(indexes)*index_number))
             index = indexes[index_number]
             isin = self.tableWidget.item(index.row(), 0).text()
-            database.update_in_database(isin)
-        self.progress.setValue(100)
-        self.refreshbutton_action()
+            task = threading.Thread(target=self.do_update_task, args=(isin, len(indexes),))
+            task.start()
               
     def to_dict(self, row):
         if row is None:
