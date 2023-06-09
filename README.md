@@ -24,7 +24,7 @@ ISIN-Check is a powerful tool designed to automate the process of downloading th
 
 To use ISIN-Check, follow these steps:
 
-1. Download the .exe. file
+1. Download the .exe. file [here](https://github.com/JonathanFroe/isin_check/releases/tag/Release-v.0.2.0)
 
 2. Run it 
 
