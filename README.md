@@ -1,4 +1,4 @@
-# ISIN-Check
+# ISIN-Check ![GitHub all releases](https://img.shields.io/github/downloads/JonathanFroe/isin_check/total?color=green&logo=Github)
 
 <img src="assets/Logo.png" alt="ISIN-Check Logo" width="100">
 
