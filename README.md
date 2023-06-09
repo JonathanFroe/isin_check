@@ -31,16 +31,16 @@ To use ISIN-Check Tool, follow these two easy steps:
 ## New features for v0.2.0
 
 - **Enhanced Multithreading Support**: Latest update incorporates advanced multithreading techniques to significantly accelerate the data retrieval process. Own tests have demonstrated an impressive _**9x**_ increase in speed.
-- **Added WKN Column**: Now the Table also shows the representive WKN-Nummber of each ISIN.
-- **Added second and third Tag-Column**: Now instead of only one Tag Column you have 3 possible Tag-Columns to sort and organize.
+- **Added WKN Column**: Now the Table also shows the representative WKN-Nummber of each ISIN.
+- **Added second and third Tag-Column**: Now instead of only one Tag Column, you have 3 possible Tag-Columns to sort and organize.
 - **Double-Click to Copy**: Double-click on a cell will copy the text into the clipboard.
-- **Descending Sorting**: By clickingagain it will now sort the other way around. Very usefull if you want to sort the Best-Performing first.
+- **Descending Sorting**: By clicking again, it will now sort the other way around. Very useful if you want to sort the Best-Performing first.
 
 ## Bugfixes for v0.2.0
 - **Solved: Tags not saved**: Tags are now saved to the database after updating them.
-- **Solved: Overriding old database**: Old or other database can now be loaded into the programm without overriding them with the current one.
+- **Solved: Overriding old database**: Old or other database can now be loaded into the program without overriding them with the current one.
 
-*Please report all Bugs via an issue request!*
+*Please report all bugs via an issue request!*
 
 ## Troubleshooting
 - *Program crashes every time I try to start it*: 
