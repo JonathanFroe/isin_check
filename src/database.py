@@ -3,6 +3,7 @@ import online_check
 from datetime import datetime, timedelta, date
 
 from sqlalchemy import create_engine
+from sqlalchemy.sql import text
 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Float, String, Date
@@ -13,6 +14,7 @@ class ISIN(Base):
 
     isin = Column(String(12), primary_key=True)
     name = Column(String(500))
+    wkn = Column(String(6))
     url = Column(String(500))
     vola_1m = Column(Float)
     vola_3m = Column(Float)
@@ -26,11 +28,14 @@ class ISIN(Base):
     perf_3y = Column(Float)
     perf_5y = Column(Float)
     perf_10y = Column(Float)
-    tag = Column(String(120), default = "New")
+    tag1 = Column(String(120), default = "New")
+    tag2 = Column(String(120), default = "")
+    tag3 = Column(String(120), default = "")
     lastupdate = Column(Date)
     
-    def update(self, name, url, vola, perf):
+    def update(self, name, wkn, url, vola, perf):
         self.name = name
+        self.wkn = wkn
         self.url = url
         self.vola_1m = vola[0]
         self.vola_3m = vola[1]
@@ -46,8 +51,14 @@ class ISIN(Base):
         self.perf_10y = perf[5]
         self.lastupdate = datetime.now()
 
-    def change_tag(self, new_tag):
-        self.tag = new_tag
+    def change_tag1(self, new_tag):
+        self.tag1 = new_tag
+        
+    def change_tag2(self, new_tag):
+        self.tag2 = new_tag
+        
+    def change_tag3(self, new_tag):
+        self.tag3 = new_tag
         
     def check_timedelta(self, delta_days):
         now = date.today()
@@ -77,22 +88,25 @@ from sqlalchemy.orm import sessionmaker
 def get_isinobject(isin):
     return session.query(ISIN).filter_by(isin=isin).first()
 
-def get_all_data(sortedby):
-    return session.query(ISIN).order_by(sortedby).all()
+def get_all_data(sortedby, desc):
+    if desc:
+        return session.query(ISIN).order_by(text(sortedby + " desc")).all()
+    else:
+        return session.query(ISIN).order_by(sortedby).all()
 
 def add_to_database(isin):
     isinobject = session.query(ISIN).filter_by(isin=isin).first()
     if isinobject is not None:
         return False
-    name, url, vola, perf = online_check.get_data(isin)
-    if name is not None and url is not None and vola is not None and perf is not None:
+    name, wkn, url, vola, perf = online_check.get_data(isin)
+    if name is not None and wkn is not None and url is not None and vola is not None and perf is not None:
         for i in range(len(vola)):
             if vola[i] is None:
                 vola[i] = 0
         for i in range(len(perf)):
             if perf[i] is None:
                 perf[i] = 0
-        new_isin = ISIN(isin=isin,  name = name, url = url, vola_1m = vola[0], vola_3m = vola[1], vola_1y = vola[2], vola_3y = vola[3], vola_5y = vola[4], vola_10y = vola[5], perf_1m = perf[0], perf_3m = perf[1], perf_1y = perf[2], perf_3y = perf[3], perf_5y = perf[4], perf_10y = perf[5], lastupdate=datetime.now())
+        new_isin = ISIN(isin=isin,  name = name, wkn = wkn, url = url, vola_1m = vola[0], vola_3m = vola[1], vola_1y = vola[2], vola_3y = vola[3], vola_5y = vola[4], vola_10y = vola[5], perf_1m = perf[0], perf_3m = perf[1], perf_1y = perf[2], perf_3y = perf[3], perf_5y = perf[4], perf_10y = perf[5], lastupdate=datetime.now())
         session.add(new_isin)
         session.commit()
         return True
@@ -106,11 +120,16 @@ def delete_from_database(isin):
     session.commit()
     return True
 
-def change_tag_in_database(isin, new_tag):
+def change_tag_in_database(isin, new_tag, tagnumber):
     isinobject = session.query(ISIN).filter_by(isin=isin).first()
     if isinobject is None:
         return False
-    isinobject.change_tag(new_tag)
+    if tagnumber==1:
+        isinobject.change_tag1(new_tag)
+    if tagnumber==2:
+        isinobject.change_tag2(new_tag)
+    if tagnumber==3:
+        isinobject.change_tag3(new_tag)
     session.commit()
 
 def update_in_database(isin, create_new=True):
@@ -121,9 +140,9 @@ def update_in_database(isin, create_new=True):
         if create_new:
             return add_to_database(isin)
         return False
-    name, url, vola, perf = online_check.get_data(isin)
-    if name is not None and url is not None and vola is not None and perf is not None:
-        isinobject.update(name, url, vola, perf)
+    name, wkn, url, vola, perf = online_check.get_data(isin)
+    if  name is not None and wkn is not None and url is not None and vola is not None and perf is not None:
+        isinobject.update(name, wkn, url, vola, perf)
         tmpsession.commit()
         return True
     return False

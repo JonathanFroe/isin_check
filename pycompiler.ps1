@@ -1,1 +1,1 @@
-python -m PyInstaller --onefile --icon=Logo.ico --noconsole main.py
+python -m PyInstaller --onefile --icon=assets/Logo.ico --noconsole src/main.py -n isin-check

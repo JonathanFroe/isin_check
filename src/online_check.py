@@ -8,13 +8,20 @@ def get_data(ISIN):
     response = requests.get(search_url, headers={"User-Agent" : "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36"})
     soup = BeautifulSoup(response.content, 'html.parser')
     if response.url != search_url:
-        return get_name(soup), response.url, get_volatilität(soup), get_performence(soup)
+        return get_name(soup), get_wkn(soup), response.url, get_volatilität(soup), get_performence(soup)
     return None
 
 def get_name(soup):
     table = soup.find(lambda tag:tag.name=="h1")
     if table is not None:
         return table.text
+    return None
+
+def get_wkn(soup):
+    table = soup.find(lambda tag:tag.name=="span" and "WKN" in tag.text)
+    if table is not None:
+        table = table.find_next_siblings("span")
+        return table[0].text[:6]
     return None
 
 def get_volatilität(soup):

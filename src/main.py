@@ -1,13 +1,15 @@
 import database
 
 import pandas as pd
+from pandas.io import clipboard
 import shutil
 from sys import exit
+
 
 length_isin = 12
 delta_days = 1
 
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtWidgets import QApplication
 import sys
 import design
@@ -18,6 +20,7 @@ class App(QtWidgets.QMainWindow, design.Ui_MainWindow):
     def __init__(self, parent=None):
         super(App, self).__init__(parent)
         self.sortedby = "isin"
+        self.sorted_desc = False
         ok = self.load_action(first_load=True)
         if ok:
             self.setupUi(self)
@@ -74,12 +77,21 @@ class App(QtWidgets.QMainWindow, design.Ui_MainWindow):
                     task.start()
         
     def editbutton_action(self):
-        new_tag, ok = QtWidgets.QInputDialog.getText(self, "Change Tag", "Enter new Tag: ")
-        if ok:
-            for index in self.tableWidget.selectedIndexes():
-                isin = self.tableWidget.item(index.row(), 0).text()
-                database.change_tag_in_database(isin, new_tag)
-        self.refreshbutton_action()
+        tagnumber, ok = QtWidgets.QInputDialog.getInt(self, "Which Tag", "Enter Number (1-3)")
+        if tagnumber >=1 and tagnumber <=3 and ok:
+            new_tag, ok = QtWidgets.QInputDialog.getText(self, "Change Tag", "Enter new Tag: ")
+            if ok:
+                for index in self.tableWidget.selectedIndexes():
+                    isin = self.tableWidget.item(index.row(), 0).text()
+                    database.change_tag_in_database(isin, new_tag, tagnumber)
+            self.refreshbutton_action()
+            
+    def onCellDoubleClicked(self, row, column):
+        print(self.tableWidget.item(row, column).text())
+        msgbx = QtWidgets.QMessageBox
+        clipboard.copy(self.tableWidget.item(row, column).text())
+        msgbx.information(self, "Copied", "'" + self.tableWidget.item(row, column).text() + "'" + " was copied to clipboard", msgbx.Ok)
+        
         
     def deletebutton_action(self):
         self.progress.setValue(0)
@@ -105,7 +117,7 @@ class App(QtWidgets.QMainWindow, design.Ui_MainWindow):
     
     def updateallbutton_action(self):
         self.progress.setValue(0)
-        isins = database.get_all_data(self.sortedby)
+        isins = database.get_all_data(self.sortedby, self.sorted_desc)
         if isins is None:
             return False
         for isin_number in range(len(isins)):
@@ -137,7 +149,7 @@ class App(QtWidgets.QMainWindow, design.Ui_MainWindow):
     def exportbutton_action(self):
         filename, ok = QtWidgets.QFileDialog.getSaveFileName(self, "Save File", "" , "Excel files (*.xlsx)")
         if ok:
-            data = database.get_all_data(self.sortedby)
+            data = database.get_all_data(self.sortedby, self.sorted_desc)
             data_list = [self.to_dict(item) for item in data]
             df = pd.DataFrame(data_list)
             df.drop(df.columns[[16]], axis=1)
@@ -155,74 +167,124 @@ class App(QtWidgets.QMainWindow, design.Ui_MainWindow):
     
     def sortbylist_action(self, item):
         text = item.text()
+        print(self.sorted_desc)
         if text == "ISIN":
+            if self.sortedby == "isin":
+                self.sorted_desc = not self.sorted_desc
             self.sortedby = "isin"
+        if text == "WKN":
+            if self.sortedby == "wkn":
+                self.sorted_desc = not self.sorted_desc
+            self.sortedby = "wkn"
         if text == "Name":
+            if self.sortedby == "name":
+                self.sorted_desc = not self.sorted_desc
             self.sortedby = "name"
         if text == "URL":
+            if self.sortedby == "url":
+                self.sorted_desc = not self.sorted_desc
             self.sortedby = "url"
         if text == "Vola 1m":
+            if self.sortedby == "vola_1m":
+                self.sorted_desc = not self.sorted_desc
             self.sortedby = "vola_1m"
         if text == "Vola 3m":
+            if self.sortedby == "vola_3m":
+                self.sorted_desc = not self.sorted_desc
             self.sortedby = "vola_3m"
         if text == "Vola 1y":
+            if self.sortedby == "vola_1y":
+                self.sorted_desc = not self.sorted_desc
             self.sortedby = "vola_1y"
         if text == "Vola 3y":
+            if self.sortedby == "vola_3y":
+                self.sorted_desc = not self.sorted_desc
             self.sortedby = "vola_3y"
         if text == "Vola 5y":
+            if self.sortedby == "vola_5y":
+                self.sorted_desc = not self.sorted_desc
             self.sortedby = "vola_5y"
         if text == "Vola 10y":
+            if self.sortedby == "vola_10y":
+                self.sorted_desc = not self.sorted_desc
             self.sortedby = "vola_10y"
         if text == "Perf 1m":
+            if self.sortedby == "perf_1m":
+                self.sorted_desc = not self.sorted_desc
             self.sortedby = "perf_1m"
         if text == "Perf 3m":
+            if self.sortedby == "perf_3m":
+                self.sorted_desc = not self.sorted_desc
             self.sortedby = "perf_3m"
         if text == "Perf 1y":
+            if self.sortedby == "perf_1y":
+                self.sorted_desc = not self.sorted_desc
             self.sortedby = "perf_1y"
         if text == "Perf 3y":
+            if self.sortedby == "perf_3y":
+                self.sorted_desc = not self.sorted_desc
             self.sortedby = "perf_3y"
         if text == "Perf 5y":
+            if self.sortedby == "perf_5y":
+                self.sorted_desc = not self.sorted_desc
             self.sortedby = "perf_5y"
         if text == "Perf 10y":
+            if self.sortedby == "perf_10y":
+                self.sorted_desc = not self.sorted_desc
             self.sortedby = "perf_10y"
-        if text == "Tag":
-            self.sortedby = "tag"
+        if text == "Tag1":
+            if self.sortedby == "tag1":
+                self.sorted_desc = not self.sorted_desc
+            self.sortedby = "tag1"
+        if text == "Tag2":
+            if self.sortedby == "tag2":
+                self.sorted_desc = not self.sorted_desc
+            self.sortedby = "tag2"
+        if text == "Tag3":
+            if self.sortedby == "tag3":
+                self.sorted_desc = not self.sorted_desc
+            self.sortedby = "tag3"
         if text == "Last Update":
+            if self.sortedby == "lastupdate":
+                self.sorted_desc = not self.sorted_desc
             self.sortedby = "lastupdate"
         self.data()
     
     def data(self):
         self.tableWidget.clear()
-        self.tableWidget.setColumnCount(17)
+        self.tableWidget.setColumnCount(20)
         
-        self.tableWidget.setHorizontalHeaderLabels(['ISIN', 'Name', 'URL', 'Vola 1m', 'Vola 3m', 'Vola 1y', 'Vola 3y', 'Vola 5y', 'Vola 10y', 'Perf 1m', 'Perf 3m', 'Perf 1y', 'Perf 3y', 'Perf 5y', 'Perf 10y', 'Tag', 'Last Update'])
+        self.tableWidget.setHorizontalHeaderLabels(['ISIN', 'WKN', 'Name', 'URL', 'Vola 1m', 'Vola 3m', 'Vola 1y', 'Vola 3y', 'Vola 5y', 'Vola 10y', 'Perf 1m', 'Perf 3m', 'Perf 1y', 'Perf 3y', 'Perf 5y', 'Perf 10y', 'Tag1', 'Tag2', 'Tag3', 'Last Update'])
         
         header = self.tableWidget.horizontalHeader()
         header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
         header.setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
+        header.setSectionResizeMode(3, QtWidgets.QHeaderView.Stretch)
         
-        data = database.get_all_data(self.sortedby)
+        data = database.get_all_data(self.sortedby, self.sorted_desc)
         self.tableWidget.setRowCount(len(data))
         for element_number in range(len(data)):
             element = data[element_number]
             self.tableWidget.setItem(element_number,0, QtWidgets.QTableWidgetItem(element.isin))
-            self.tableWidget.setItem(element_number,1, QtWidgets.QTableWidgetItem(element.name))
-            self.tableWidget.setItem(element_number,2, QtWidgets.QTableWidgetItem(element.url))
-            self.tableWidget.setItem(element_number,3, QtWidgets.QTableWidgetItem(str(element.vola_1m)))
-            self.tableWidget.setItem(element_number,4, QtWidgets.QTableWidgetItem(str(element.vola_3m)))
-            self.tableWidget.setItem(element_number,5, QtWidgets.QTableWidgetItem(str(element.vola_1y)))
-            self.tableWidget.setItem(element_number,6, QtWidgets.QTableWidgetItem(str(element.vola_3y)))
-            self.tableWidget.setItem(element_number,7, QtWidgets.QTableWidgetItem(str(element.vola_5y)))
-            self.tableWidget.setItem(element_number,8, QtWidgets.QTableWidgetItem(str(element.vola_10y)))
-            self.tableWidget.setItem(element_number,9, QtWidgets.QTableWidgetItem(str(element.perf_1m)))
-            self.tableWidget.setItem(element_number,10, QtWidgets.QTableWidgetItem(str(element.perf_3m)))
-            self.tableWidget.setItem(element_number,11, QtWidgets.QTableWidgetItem(str(element.perf_1y)))
-            self.tableWidget.setItem(element_number,12, QtWidgets.QTableWidgetItem(str(element.perf_3y)))
-            self.tableWidget.setItem(element_number,13, QtWidgets.QTableWidgetItem(str(element.perf_5y)))
-            self.tableWidget.setItem(element_number,14, QtWidgets.QTableWidgetItem(str(element.perf_10y)))
-            self.tableWidget.setItem(element_number,15, QtWidgets.QTableWidgetItem(element.tag))
-            self.tableWidget.setItem(element_number,16, QtWidgets.QTableWidgetItem(str(element.lastupdate)))
+            self.tableWidget.setItem(element_number,1, QtWidgets.QTableWidgetItem(element.wkn))
+            self.tableWidget.setItem(element_number,2, QtWidgets.QTableWidgetItem(element.name))
+            self.tableWidget.setItem(element_number,3, QtWidgets.QTableWidgetItem(element.url))
+            self.tableWidget.setItem(element_number,4, QtWidgets.QTableWidgetItem(str(element.vola_1m)))
+            self.tableWidget.setItem(element_number,5, QtWidgets.QTableWidgetItem(str(element.vola_3m)))
+            self.tableWidget.setItem(element_number,6, QtWidgets.QTableWidgetItem(str(element.vola_1y)))
+            self.tableWidget.setItem(element_number,7, QtWidgets.QTableWidgetItem(str(element.vola_3y)))
+            self.tableWidget.setItem(element_number,8, QtWidgets.QTableWidgetItem(str(element.vola_5y)))
+            self.tableWidget.setItem(element_number,9, QtWidgets.QTableWidgetItem(str(element.vola_10y)))
+            self.tableWidget.setItem(element_number,10, QtWidgets.QTableWidgetItem(str(element.perf_1m)))
+            self.tableWidget.setItem(element_number,11, QtWidgets.QTableWidgetItem(str(element.perf_3m)))
+            self.tableWidget.setItem(element_number,12, QtWidgets.QTableWidgetItem(str(element.perf_1y)))
+            self.tableWidget.setItem(element_number,13, QtWidgets.QTableWidgetItem(str(element.perf_3y)))
+            self.tableWidget.setItem(element_number,14, QtWidgets.QTableWidgetItem(str(element.perf_5y)))
+            self.tableWidget.setItem(element_number,15, QtWidgets.QTableWidgetItem(str(element.perf_10y)))
+            self.tableWidget.setItem(element_number,16, QtWidgets.QTableWidgetItem(element.tag1))
+            self.tableWidget.setItem(element_number,17, QtWidgets.QTableWidgetItem(element.tag2))
+            self.tableWidget.setItem(element_number,18, QtWidgets.QTableWidgetItem(element.tag3))
+            self.tableWidget.setItem(element_number,19, QtWidgets.QTableWidgetItem(str(element.lastupdate)))
   
 
 def main():
