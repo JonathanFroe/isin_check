@@ -1,6 +1,6 @@
 import database
 
-import pandas as pd
+import xlsxwriter
 from pandas.io import clipboard
 import shutil
 from sys import exit
@@ -9,13 +9,14 @@ from sys import exit
 length_isin = 12
 delta_days = 1
 
-from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QApplication
 import sys
 import design
 from os.path import exists
 
 import threading
+
 class App(QtWidgets.QMainWindow, design.Ui_MainWindow):
     def __init__(self, parent=None):
         super(App, self).__init__(parent)
@@ -150,12 +151,13 @@ class App(QtWidgets.QMainWindow, design.Ui_MainWindow):
         filename, ok = QtWidgets.QFileDialog.getSaveFileName(self, "Save File", "" , "Excel files (*.xlsx)")
         if ok:
             data = database.get_all_data(self.sortedby, self.sorted_desc)
-            data_list = [self.to_dict(item) for item in data]
-            df = pd.DataFrame(data_list)
-            df.drop(df.columns[[16]], axis=1)
-            writer = pd.ExcelWriter(filename)
-            df.to_excel(writer,  index=False)
-            writer.save()
+            data_list = [self.to_dict(item).values() for item in data]
+            with xlsxwriter.Workbook(filename) as workbook:
+                worksheet = workbook.add_worksheet()
+                worksheet.write_row(0, 0, ['ISIN', 'Name', 'WKN', 'URL', 'Vola 1m', 'Vola 3m', 'Vola 1y', 'Vola 3y', 'Vola 5y', 'Vola 10y', 'Perf 1m', 'Perf 3m', 'Perf 1y', 'Perf 3y', 'Perf 5y', 'Perf 10y', 'Tag1', 'Tag2', 'Tag3', 'Last Update'])
+                for row_num, data in enumerate(data_list):
+                    worksheet.write_row(row_num+1, 0, data)
+            self.progress.setValue(100)
 
     def show_Info_action(self):
         msgBox = QtWidgets.QMessageBox()
