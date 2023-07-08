@@ -30,19 +30,10 @@ class App(QtWidgets.QMainWindow, design.Ui_MainWindow):
             exit(0)
 
     def load_action(self, first_load=False):
-        ok = False
-        if exists("config-isincheck.conf") and first_load:
-            with open("config-isincheck.conf", 'r') as fi:
-                self.filename = fi.read()
-            if exists(self.filename):
-                ok = True
-        if ok is False:
-            self.filename = ""
-            self.filename, ok = QtWidgets.QFileDialog.getOpenFileName(self, "Load database (Press >Cancle< to create new one)", "" , "SQLite files (*.db)")
-            if self.filename == "":
-                self.filename, ok = QtWidgets.QFileDialog.getSaveFileName(self, "Create new database", "" , "SQLite files (*.db)")
-            with open("config-isincheck.conf", 'w') as fi:
-                fi.write(self.filename)
+        self.filename = ""
+        self.filename, ok = QtWidgets.QFileDialog.getOpenFileName(self, "Load database (Press >Cancle< to create new one)", "" , "SQLite files (*.db)")
+        if self.filename == "":
+            self.filename, ok = QtWidgets.QFileDialog.getSaveFileName(self, "Create new database", "" , "SQLite files (*.db)")
         database.close_db()
         database.init_db(self.filename)
         if not first_load:

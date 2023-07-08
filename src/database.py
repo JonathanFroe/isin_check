@@ -94,8 +94,8 @@ def get_all_data(sortedby, desc):
     else:
         return session.query(ISIN).order_by(sortedby).all()
 
-def add_to_database(isin):
-    isinobject = session.query(ISIN).filter_by(isin=isin).first()
+def add_to_database(isin, tmpsession):
+    isinobject = tmpsession.query(ISIN).filter_by(isin=isin).first()
     if isinobject is not None:
         return False
     name, wkn, url, vola, perf = online_check.get_data(isin)
@@ -107,8 +107,8 @@ def add_to_database(isin):
             if perf[i] is None:
                 perf[i] = 0
         new_isin = ISIN(isin=isin,  name = name, wkn = wkn, url = url, vola_1m = vola[0], vola_3m = vola[1], vola_1y = vola[2], vola_3y = vola[3], vola_5y = vola[4], vola_10y = vola[5], perf_1m = perf[0], perf_3m = perf[1], perf_1y = perf[2], perf_3y = perf[3], perf_5y = perf[4], perf_10y = perf[5], lastupdate=datetime.now())
-        session.add(new_isin)
-        session.commit()
+        tmpsession.add(new_isin)
+        tmpsession.commit()
         return True
     return False
 
@@ -138,7 +138,7 @@ def update_in_database(isin, create_new=True):
     isinobject = tmpsession.query(ISIN).filter_by(isin=isin).first()
     if isinobject is None:
         if create_new:
-            return add_to_database(isin)
+            return add_to_database(isin, tmpsession)
         return False
     name, wkn, url, vola, perf = online_check.get_data(isin)
     if  name is not None and wkn is not None and url is not None and vola is not None and perf is not None:
