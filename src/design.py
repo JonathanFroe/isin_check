@@ -225,7 +225,7 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", self.filename))
         self.addbutton.setText(_translate("MainWindow", "Add"))
-        self.addmultiplebutton.setText(_translate("MainWindow", "Add muliple"))
+        self.addmultiplebutton.setText(_translate("MainWindow", "Add multiple"))
         self.editbutton.setText(_translate("MainWindow", "Edit Tag"))
         self.deletebutton.setText(_translate("MainWindow", "Delete"))
         self.refreshbutton.setText(_translate("MainWindow", "Refresh"))
