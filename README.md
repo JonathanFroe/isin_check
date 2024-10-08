@@ -32,6 +32,7 @@ To use ISIN-Check Tool, follow these two easy steps:
 
 - **Row Highlighting for Outdated Data**: If a row contains data that is not up-to-date, it will be highlighted in red.
 - **Field Highlighting for Missing Values**: Fields with missing values will be highlighted in blue. Additionally, performance values will be color-coded: negative values in red and positive values in green.
+- **Automatic Refresh After Update**: The tool now automatically refreshes the data after an update, eliminating the need for manual refresh.
 
 ## Bugfixes for v0.2.2
 

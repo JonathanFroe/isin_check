@@ -122,11 +122,6 @@ class Ui_MainWindow(object):
         
         self.gridLayout_2.addLayout(self.horizontalLayout, 1, 0, 1, 1)
         
-        self.labelwarning = QtWidgets.QLabel(self.centralwidget)
-        self.labelwarning.setObjectName("labelwarning")
-        
-        self.gridLayout_2.addWidget(self.labelwarning, 2, 0, 1, 1)
-        
         self.copyright = QtWidgets.QLabel(self.centralwidget)
         self.copyright.setObjectName("copyright")
         self.copyright.setText('''<a href='https://github.com/JonathanFroe'>Jonathan Fröhlich</a>''')
@@ -232,7 +227,6 @@ class Ui_MainWindow(object):
         self.label.setText(_translate("MainWindow", "Sort by"))
         self.updateallbutton.setText(_translate("MainWindow", "Update all"))
         self.updatebutton.setText(_translate("MainWindow", "Update"))
-        self.labelwarning.setText(_translate("MainWindow", "Please Click >Refresh< after each >Update< and >Add< to display the new values!"))
         self.exportbutton.setText(_translate("MainWindow", "Export"))
         self.selected.setText(_translate("MainWindow", "made with 🖤 by"))
         self.menuFile.setTitle(_translate("MainWindow", "File"))
