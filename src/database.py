@@ -140,9 +140,15 @@ def update_in_database(isin, create_new=True):
         if create_new:
             return add_to_database(isin, tmpsession)
         return False
-    name, wkn, url, vola, perf = online_check.get_data(isin)
-    if  name is not None and wkn is not None and url is not None and vola is not None and perf is not None:
-        isinobject.update(name, wkn, url, vola, perf)
-        tmpsession.commit()
-        return True
+    versuche = 7
+    while versuche > 0:
+        versuche -= 1
+        data = online_check.get_data(isin)
+        if data is not None:
+            name, wkn, url, vola, perf = data
+            if  name is not None and wkn is not None and url is not None:
+                isinobject.update(name, wkn, url, vola, perf)
+                tmpsession.commit()
+                versuche = 0
+                return True
     return False

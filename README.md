@@ -24,9 +24,22 @@ ISIN-Check is a powerful tool designed to automate the process of downloading th
 
 To use ISIN-Check Tool, follow these two easy steps:
 
-1. Download the .exe file: [Latest release here (v0.2.0)](https://github.com/JonathanFroe/isin_check/releases/latest)
+1. Download the .exe file: [Latest release here](https://github.com/JonathanFroe/isin_check/releases/latest)
 
 2. Run it!
+
+## New features for v0.2.2
+
+- **Row Highlighting for Outdated Data**: If a row contains data that is not up-to-date, it will be highlighted in red.
+- **Field Highlighting for Missing Values**: Fields with missing values will be highlighted in blue. Additionally, performance values will be color-coded: negative values in red and positive values in green.
+
+## Bugfixes for v0.2.2
+
+- **Fixed: WKN Display Issue**: The WKN is now displayed correctly.
+- **Fixed: Excel Export Row Order**: Rows 2 and 3 in the Excel export have been swapped to match the layout of the table in the program.
+- **Fixed: Update Reliability**: The update process is now more reliable.
+
+
 
 ## New features for v0.2.0
 

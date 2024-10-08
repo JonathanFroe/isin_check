@@ -11,6 +11,7 @@ delta_days = 1
 
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QApplication
+from PyQt5.QtGui import QColor
 import sys
 import design
 from os.path import exists
@@ -105,6 +106,8 @@ class App(QtWidgets.QMainWindow, design.Ui_MainWindow):
         print("updated:" + isin)
         print(str(100-(threading.active_count()-2)/taskcount*100)+"%")
         self.progress.setValue(100-int((threading.active_count()-2)/taskcount*100)) # get status of update by the count of threads 
+        if (threading.active_count()-2)/taskcount == 0:
+            self.refreshbutton_action()
         
     
     def updateallbutton_action(self):
@@ -142,10 +145,13 @@ class App(QtWidgets.QMainWindow, design.Ui_MainWindow):
         filename, ok = QtWidgets.QFileDialog.getSaveFileName(self, "Save File", "" , "Excel files (*.xlsx)")
         if ok:
             data = database.get_all_data(self.sortedby, self.sorted_desc)
-            data_list = [self.to_dict(item).values() for item in data]
+            data_list = [list(self.to_dict(item).values()) for item in data]
+            #switch places of WKN and Name
+            for i in range(len(data_list)):
+                data_list[i][1], data_list[i][2] = data_list[i][2], data_list[i][1]
             with xlsxwriter.Workbook(filename) as workbook:
                 worksheet = workbook.add_worksheet()
-                worksheet.write_row(0, 0, ['ISIN', 'Name', 'WKN', 'URL', 'Vola 1m', 'Vola 3m', 'Vola 1y', 'Vola 3y', 'Vola 5y', 'Vola 10y', 'Perf 1m', 'Perf 3m', 'Perf 1y', 'Perf 3y', 'Perf 5y', 'Perf 10y', 'Tag1', 'Tag2', 'Tag3', 'Last Update'])
+                worksheet.write_row(0, 0, ['ISIN', 'WKN', 'Name', 'URL', 'Vola 1m', 'Vola 3m', 'Vola 1y', 'Vola 3y', 'Vola 5y', 'Vola 10y', 'Perf 1m', 'Perf 3m', 'Perf 1y', 'Perf 3y', 'Perf 5y', 'Perf 10y', 'Tag1', 'Tag2', 'Tag3', 'Last Update'])
                 for row_num, data in enumerate(data_list):
                     worksheet.write_row(row_num+1, 0, data)
             self.progress.setValue(100)
@@ -262,22 +268,93 @@ class App(QtWidgets.QMainWindow, design.Ui_MainWindow):
             self.tableWidget.setItem(element_number,1, QtWidgets.QTableWidgetItem(element.wkn))
             self.tableWidget.setItem(element_number,2, QtWidgets.QTableWidgetItem(element.name))
             self.tableWidget.setItem(element_number,3, QtWidgets.QTableWidgetItem(element.url))
+            
+            # set vola and perf values and color them if they are None or negative or positive
             self.tableWidget.setItem(element_number,4, QtWidgets.QTableWidgetItem(str(element.vola_1m)))
+            if element.vola_1m is None:
+                self.tableWidget.item(element_number, 4).setBackground(QColor(200, 200, 255))
+                
             self.tableWidget.setItem(element_number,5, QtWidgets.QTableWidgetItem(str(element.vola_3m)))
+            if element.vola_3m is None:
+                self.tableWidget.item(element_number, 5).setBackground(QColor(200, 200, 255))
+                
             self.tableWidget.setItem(element_number,6, QtWidgets.QTableWidgetItem(str(element.vola_1y)))
+            if element.vola_1y is None:
+                self.tableWidget.item(element_number, 6).setBackground(QColor(200, 200, 255))
+                
             self.tableWidget.setItem(element_number,7, QtWidgets.QTableWidgetItem(str(element.vola_3y)))
+            if element.vola_3y is None:
+                self.tableWidget.item(element_number, 7).setBackground(QColor(200, 200, 255))
+                
             self.tableWidget.setItem(element_number,8, QtWidgets.QTableWidgetItem(str(element.vola_5y)))
+            if element.vola_5y is None:
+                self.tableWidget.item(element_number, 8).setBackground(QColor(200, 200, 255))
+                
             self.tableWidget.setItem(element_number,9, QtWidgets.QTableWidgetItem(str(element.vola_10y)))
+            if element.vola_10y is None:
+                self.tableWidget.item(element_number, 9).setBackground(QColor(200, 200, 255))
+            
+            
             self.tableWidget.setItem(element_number,10, QtWidgets.QTableWidgetItem(str(element.perf_1m)))
+            if element.perf_1m is None:
+                self.tableWidget.item(element_number, 10).setBackground(QColor(200, 200, 255))
+            elif element.perf_1m < 0:
+                self.tableWidget.item(element_number, 10).setBackground(QColor(255, 200, 200))
+            elif element.perf_1m >= 0:
+                self.tableWidget.item(element_number, 10).setBackground(QColor(200, 255, 200))
+                
             self.tableWidget.setItem(element_number,11, QtWidgets.QTableWidgetItem(str(element.perf_3m)))
+            if element.perf_3m is None:
+                self.tableWidget.item(element_number, 11).setBackground(QColor(200, 200, 255))
+            elif element.perf_3m < 0:
+                self.tableWidget.item(element_number, 11).setBackground(QColor(255, 200, 200))
+            elif element.perf_3m >= 0:
+                self.tableWidget.item(element_number, 11).setBackground(QColor(200, 255, 200))
+                
             self.tableWidget.setItem(element_number,12, QtWidgets.QTableWidgetItem(str(element.perf_1y)))
+            if element.perf_1y is None:
+                self.tableWidget.item(element_number, 12).setBackground(QColor(200, 200, 255))
+            elif element.perf_1y < 0:
+                self.tableWidget.item(element_number, 12).setBackground(QColor(255, 200, 200))
+            elif element.perf_1y >= 0:
+                self.tableWidget.item(element_number, 12).setBackground(QColor(200, 255, 200))
+                
             self.tableWidget.setItem(element_number,13, QtWidgets.QTableWidgetItem(str(element.perf_3y)))
+            if element.perf_3y is None:
+                self.tableWidget.item(element_number, 13).setBackground(QColor(200, 200, 255))
+            elif element.perf_3y < 0:
+                self.tableWidget.item(element_number, 13).setBackground(QColor(255, 200, 200))
+            elif element.perf_3y >= 0:
+                self.tableWidget.item(element_number, 13).setBackground(QColor(200, 255, 200))
+                
             self.tableWidget.setItem(element_number,14, QtWidgets.QTableWidgetItem(str(element.perf_5y)))
+            if element.perf_5y is None:
+                self.tableWidget.item(element_number, 14).setBackground(QColor(200, 200, 255))
+            elif element.perf_5y < 0:
+                self.tableWidget.item(element_number, 14).setBackground(QColor(255, 200, 200))
+            elif element.perf_5y >= 0:
+                self.tableWidget.item(element_number, 14).setBackground(QColor(200, 255, 200))
+                
             self.tableWidget.setItem(element_number,15, QtWidgets.QTableWidgetItem(str(element.perf_10y)))
+            if element.perf_10y is None:
+                self.tableWidget.item(element_number, 15).setBackground(QColor(200, 200, 255))
+            elif element.perf_10y < 0:
+                self.tableWidget.item(element_number, 15).setBackground(QColor(255, 200, 200))
+            elif element.perf_10y >= 0:
+                self.tableWidget.item(element_number, 15).setBackground(QColor(200, 255, 200))
+                
             self.tableWidget.setItem(element_number,16, QtWidgets.QTableWidgetItem(element.tag1))
             self.tableWidget.setItem(element_number,17, QtWidgets.QTableWidgetItem(element.tag2))
             self.tableWidget.setItem(element_number,18, QtWidgets.QTableWidgetItem(element.tag3))
             self.tableWidget.setItem(element_number,19, QtWidgets.QTableWidgetItem(str(element.lastupdate)))
+            
+            # check if last update is older than delta_days and color the row
+            if element.check_timedelta(1):
+                color = QColor(255, 100, 100)
+            else:
+                color = QColor(255, 255, 255)
+            for i in filter(lambda x: x < 4 or x > 15 , range(20)):
+                self.tableWidget.item(element_number, i).setBackground(color)
   
 
 def main():

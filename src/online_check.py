@@ -9,6 +9,7 @@ def get_data(ISIN):
     soup = BeautifulSoup(response.content, 'html.parser')
     if response.url != search_url:
         return get_name(soup), get_wkn(soup), response.url, get_volatilität(soup), get_performence(soup)
+    print("ISIN not found")
     return None
 
 def get_name(soup):
@@ -18,9 +19,9 @@ def get_name(soup):
     return None
 
 def get_wkn(soup):
-    table = soup.find(lambda tag:tag.name=="span" and "WKN" in tag.text)
+    table = soup.find(lambda tag:tag.name=="dt" and "WKN" in tag.text)
     if table is not None:
-        table = table.find_next_siblings("span")
+        table = table.find_next_sibling().find_all('span')
         return table[0].text[:6]
     return None
 
